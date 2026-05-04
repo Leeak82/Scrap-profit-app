@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scrap Profit Assistant V2</title>
+<style>
+body{margin:0;font-family:Arial;background:#0b0f14;color:#eef3f8}
+header{padding:22px;background:linear-gradient(135deg,#10202c,#1d3d2b)}
+.wrap{padding:16px;max-width:950px;margin:auto}
+.card{background:#121923;border:1px solid #26394b;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 10px 25px #0008}
+button,input,select,textarea{width:100%;padding:13px;margin-top:8px;border-radius:12px;border:1px solid #344a60;background:#0d141d;color:#eef3f8;font-size:16px;box-sizing:border-box}
+button{background:#22c55e;color:#07110a;font-weight:bold;border:0}
+.secondary{background:#2563eb;color:white}
+.gold{background:#f59e0b;color:#111}
+.big{font-size:34px;font-weight:bold;color:#7dd3fc}
+.pill{display:inline-block;background:#223449;padding:8px 11px;border-radius:999px;margin:4px}
+.warn{background:#3a2410;border:1px solid #ffb020;color:#ffd9a0;padding:12px;border-radius:14px}
+.good{background:#11331e;border:1px solid #22c55e;color:#b8ffd0;padding:12px;border-radius:14px}
+a{color:#7dd3fc}
+</style>
+</head>
+<body>
+<header>
+<h1>🧲 Scrap Profit Assistant V2</h1>
+<div>Google Lens finds it. This app decides if it’s worth your time.</div>
+</header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>API Setup</h2>
+<input id="scrapApiKey" placeholder="ScrapMetalAPI key optional">
+<button class="secondary" onclick="saveKey()">Save API Key</button>
+<p>If no key is saved, app uses built-in fallback estimates.</p>
+</div>
+
+<div class="card">
+<h2>1. Identify</h2>
+<button class="secondary" onclick="window.open('https://lens.google.com/','_blank')">📸 Open Google Lens</button>
+
+<label>Metal Type</label>
+<select id="metal">
+<option value="lead">Lead</option>
+<option value="aluminum">Aluminum</option>
+<option value="copper">Copper</option>
+<option value="brass">Brass</option>
+<option value="steel">Steel / Iron</option>
+<option value="stainless">Stainless Steel</option>
+<option value="zinc">Zinc / Die Cast</option>
+</select>
+
+<label>Weight in pounds</label>
+<input id="weight" type="number" value="1" step="0.1">
+
+<label>Condition</label>
+<select id="condition">
+<option value="clean">Clean / sorted</option>
+<option value="dirty">Dirty / unknown</option>
+<option value="mixed">Mixed / attached parts</option>
+</select>
+
+<label>Your city or ZIP</label>
+<input id="place" value="Tacoma, WA">
+
+<button onclick="calculate()">💰 Calculate Decision</button>
+</div>
+
+<div class="card" id="result">
+<h2>Ready</h2>
+<p>Scan with Lens, pick metal, enter weight, then calculate.</p>
+</div>
+
+<div class="card">
+<h2>2. Save Item</h2>
+<input id="itemName" value="Metal find">
+<button onclick="saveItem()">➕ Save to Inventory</button>
+</div>
+
+<div class="card">
+<h2>3. Inventory</h2>
+<div id="inventory"></div>
+<button class="gold" onclick="exportReport()">📄 Export Sell Report</button>
+<button class="secondary" onclick="zipInstructions()">📦 Zip Instructions</button>
+</div>
+
+</div>
+
+<script>
+const fallbackPrices = {
+  lead:{name:"Lead",low:0.35,high:0.75,tip:"Wash hands. Do not sand, grind, or melt."},
+  aluminum:{name:"Aluminum",low:0.30,high:0.75,tip:"Clean sorted aluminum pays better."},
+  copper:{name:"Copper",low:2.50,high:4.25,tip:"High value. Strip/clean if worth the time."},
+  brass:{name:"Brass",low:1.20,high:2.40,tip:"Remove steel screws and mixed parts."},
+  steel:{name:"Steel / Iron",low:0.03,high:0.12,tip:"Usually needs weight to be worth the drive."},
+  stainless:{name:"Stainless Steel",low:0.25,high:0.90,tip:"Separate from regular steel."},
+  zinc:{name:"Zinc / Die Cast",low:0.20,high:0.60,tip:"Do not melt zinc."}
+};
+
+let lastResult = null;
+
+function saveKey(){
+  localStorage.setItem("scrapApiKey", document.getElementById("scrapApiKey").value.trim());
+  alert("API key saved locally on this device.");
+}
+
+function mult(c){
+  return c==="clean" ? 1 : c==="dirty" ? .75 : .55;
+}
+
+async function getApiPrice(metal){
+  const key = localStorage.getItem("scrapApiKey") || "";
+  if(!key) return null;
+
+  /*
+    API adapter zone:
+    ScrapMetalAPI docs may require a specific endpoint/path.
+    When you get your key/docs, replace the URL below.
+  */
+  try{
+    const url = "https://api.scrapmetalapi.com/latest?access_key=" + encodeURIComponent(key);
+    const r = await fetch(url);
+    const data = await r.json();
+
+    const map = {
+      copper:["copper","CU"],
+      aluminum:["aluminum","AL"],
+      steel:["steel","STEEL"],
+      brass:["brass","BRASS"]
+    };
+
+    const keys = map[metal] || [];
+    for(const k of keys){
+      if(data[k]) return Number(data[k]);
+      if(data.rates && data.rates[k]) return Number(data.rates[k]);
+      if(data.prices && data.prices[k]) return Number(data.prices[k]);
+    }
+  }catch(e){
+    console.log("API failed, using fallback", e);
+  }
+  return null;
+}
+
+async function calculate(){
+  const metal = document.getElementById("metal").value;
+  const weight = parseFloat(document.getElementById("weight").value || 0);
+  const condition = document.getElementById("condition").value;
+  const place = document.getElementById("place").value || "near me";
+  let p = fallbackPrices[metal];
+
+  const apiPrice = await getApiPrice(metal);
+  let source = "fallback estimate";
+  let low = weight*p.low*mult(condition);
+  let high = weight*p.high*mult(condition);
+
+  if(apiPrice && apiPrice > 0){
+    low = weight * apiPrice * 0.75 * mult(condition);
+    high = weight * apiPrice * 1.05 * mult(condition);
+    source = "API estimate";
+  }
+
+  const avg = (low+high)/2;
+  let decision = "SCRAP IT";
+  if(avg < 5) decision = "SAVE UNTIL YOU HAVE MORE";
+  if(metal==="steel" && weight < 50) decision = "NOT WORTH A SPECIAL TRIP";
+  if(metal==="copper" || metal==="brass") decision = "CALL 3 YARDS OR RESELL";
+  if(avg > 25) decision = "SELL TODAY IF YARD PRICE IS GOOD";
+
+  const maps = "https://www.google.com/maps/search/scrap+yard+near+" + encodeURIComponent(place);
+  const ebay = "https://www.ebay.com/sch/i.html?_nkw=" + encodeURIComponent(p.name + " scrap metal") + "&LH_Sold=1&LH_Complete=1";
+  const call = `Do you buy ${p.name}? What is today's price per pound? Do you take ${condition} material? Do you require ID?`;
+
+  lastResult = {name:p.name, metal, weight, condition, low, high, avg, decision, place, source, call};
+
+  document.getElementById("result").innerHTML = `
+    <h2>Profit Decision</h2>
+    <div class="big">$${low.toFixed(2)} - $${high.toFixed(2)}</div>
+    <p>Average: <b>$${avg.toFixed(2)}</b> | Source: ${source}</p>
+    <div class="good"><b>${decision}</b></div>
+    <p><span class="pill">${p.name}</span><span class="pill">${weight} lb</span><span class="pill">${condition}</span></p>
+    <div class="warn">${p.tip}</div>
+    <h3>Sell Options</h3>
+    <p><a href="${maps}" target="_blank">📍 Nearby scrap yards</a></p>
+    <p><a href="${ebay}" target="_blank">🔎 Check eBay sold comps</a></p>
+    <h3>Call Script</h3>
+    <textarea rows="4">${call}</textarea>
+  `;
+}
+
+function saveItem(){
+  if(!lastResult){ alert("Calculate first."); return; }
+  const itemName = document.getElementById("itemName").value || "Metal find";
+  const items = JSON.parse(localStorage.getItem("items") || "[]");
+  items.push({...lastResult,itemName,date:new Date().toLocaleString()});
+  localStorage.setItem("items", JSON.stringify(items));
+  renderInventory();
+}
+
+function renderInventory(){
+  const items = JSON.parse(localStorage.getItem("items") || "[]");
+  let low=0, high=0, html="";
+  items.forEach((x,i)=>{
+    low+=x.low; high+=x.high;
+    html += `<div class="card"><b>${i+1}. ${x.itemName}</b><br>${x.name} | ${x.weight} lb | ${x.condition}<br>$${x.low.toFixed(2)} - $${x.high.toFixed(2)}<br>${x.decision}</div>`;
+  });
+  document.getElementById("inventory").innerHTML = `<div class="big">$${low.toFixed(2)} - $${high.toFixed(2)}</div><p>Total estimated inventory</p>${html}`;
+}
+
+function exportReport(){
+  const items = JSON.parse(localStorage.getItem("items") || "[]");
+  let txt = "SCRAP PROFIT ASSISTANT V2 REPORT\n\n";
+  let low=0, high=0;
+  items.forEach((x,i)=>{
+    low+=x.low; high+=x.high;
+    txt += `${i+1}. ${x.itemName}\nMetal: ${x.name}\nWeight: ${x.weight} lb\nCondition: ${x.condition}\nEstimate: $${x.low.toFixed(2)} - $${x.high.toFixed(2)}\nDecision: ${x.decision}\nCall: ${x.call}\n\n`;
+  });
+  txt += `TOTAL: $${low.toFixed(2)} - $${high.toFixed(2)}\n`;
+  const blob = new Blob([txt],{type:"text/plain"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="scrap_profit_report.txt";
+  a.click();
+}
+
+function zipInstructions(){
+  alert("In Termux run: cd ~ && zip -r ScrapProfitAssistantV2.zip ScrapProfitAssistantV2 && cp ScrapProfitAssistantV2.zip ~/storage/downloads/");
+}
+
+document.getElementById("scrapApiKey").value = localStorage.getItem("scrapApiKey") || "";
+renderInventory();
+</script>
+</body>
+</html>
