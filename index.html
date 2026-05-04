@@ -2,343 +2,176 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scrap Profit Assistant V3</title>
+<title>Scrap Profit Assistant V6</title>
+
 <style>
-:root{
-  --bg:#071018;
-  --card:#101b26;
-  --card2:#142333;
-  --line:#26394b;
-  --text:#edf6ff;
-  --muted:#9fb3c8;
-  --green:#22c55e;
-  --blue:#38bdf8;
-  --gold:#f59e0b;
-  --red:#ef4444;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top,#17384d,var(--bg));color:var(--text)}
-header{padding:24px 18px;background:linear-gradient(135deg,#0e2a3a,#143b28);border-bottom:1px solid var(--line)}
-h1{margin:0;font-size:30px}
-h2{margin-top:0}
-small,.muted{color:var(--muted)}
-.wrap{padding:16px;max-width:980px;margin:auto}
-.card{background:linear-gradient(180deg,var(--card),#0d1620);border:1px solid var(--line);border-radius:20px;padding:16px;margin:14px 0;box-shadow:0 14px 35px #0009}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{display:block;margin-top:12px;font-weight:bold;color:#d7e7f5}
-button,input,select,textarea{
-  width:100%;padding:13px;margin-top:8px;border-radius:14px;border:1px solid #344a60;
-  background:#0a121b;color:var(--text);font-size:16px
-}
-button{border:0;font-weight:bold;background:var(--green);color:#06110a;cursor:pointer}
-button:active{transform:scale(.99)}
-.secondary{background:#2563eb;color:#fff}
-.gold{background:var(--gold);color:#111}
-.red{background:var(--red);color:#fff}
-.dark{background:#223449;color:#dbeafe}
-.big{font-size:38px;font-weight:900;color:var(--blue)}
-.pill{display:inline-block;background:#223449;padding:8px 11px;border-radius:999px;margin:4px;color:#dbeafe}
-.warn{background:#3a2410;border:1px solid #ffb020;color:#ffd9a0;padding:12px;border-radius:14px;margin-top:10px}
-.good{background:#11331e;border:1px solid var(--green);color:#b8ffd0;padding:12px;border-radius:14px;margin-top:10px}
-.scorebar{height:16px;background:#071018;border:1px solid #344a60;border-radius:999px;overflow:hidden;margin-top:8px}
-.scorefill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold),var(--green));width:0%}
-.item{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
-a{color:#7dd3fc}
-.footer{padding:20px;text-align:center;color:var(--muted)}
-@media(max-width:800px){.grid{grid-template-columns:1fr}h1{font-size:26px}.big{font-size:32px}}
+body{margin:0;font-family:Arial;background:#071018;color:#edf6ff}
+header{padding:20px;background:linear-gradient(135deg,#0e2a3a,#143b28)}
+.wrap{padding:16px;max-width:900px;margin:auto}
+.card{background:#101b26;border:1px solid #26394b;border-radius:16px;padding:16px;margin:14px 0}
+button,input,select{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #344a60;background:#0a121b;color:#fff}
+button{background:#22c55e;color:#06110a;font-weight:bold}
+.secondary{background:#2563eb}
+.big{font-size:34px;font-weight:bold;color:#38bdf8}
+.good{background:#11331e;padding:10px;border-radius:12px;margin-top:10px}
+.warn{background:#3a2410;padding:10px;border-radius:12px;margin-top:10px}
+.item{background:#142333;padding:10px;border-radius:12px;margin:8px 0}
 </style>
 </head>
 
 <body>
+
 <header>
-  <h1>🧲 Scrap Profit Assistant V3</h1>
-  <div class="muted">Google Lens identifies it. This decides if it makes money.</div>
+<h1>🧲 Scrap Profit Assistant V6</h1>
+<div>Market-aware decisions. Real-world scrap strategy.</div>
 </header>
 
 <div class="wrap">
 
-<div class="grid">
-  <div class="card">
-    <h2>1. Identify</h2>
-    <button class="secondary" onclick="openLens()">📸 Open Google Lens</button>
+<div class="card">
+<button class="secondary" onclick="window.open('https://lens.google.com/','_blank')">
+📸 Open Google Lens
+</button>
 
-    <label>Metal type</label>
-    <select id="metal">
-      <option value="lead">Lead</option>
-      <option value="aluminum">Aluminum</option>
-      <option value="copper">Copper</option>
-      <option value="brass">Brass</option>
-      <option value="steel">Steel / Iron</option>
-      <option value="stainless">Stainless Steel</option>
-      <option value="zinc">Zinc / Die Cast</option>
-      <option value="battery">Car Battery</option>
-      <option value="wire">Insulated Copper Wire</option>
-    </select>
+<label>Metal</label>
+<select id="metal">
+<option value="copper">Copper</option>
+<option value="brass">Brass</option>
+<option value="aluminum">Aluminum</option>
+<option value="lead">Lead</option>
+<option value="steel">Steel</option>
+</select>
 
-    <label>Weight in pounds</label>
-    <input id="weight" type="number" value="1" step="0.1">
+<label>Weight (lbs)</label>
+<input id="weight" type="number" value="1">
 
-    <label>Condition</label>
-    <select id="condition">
-      <option value="clean">Clean / sorted</option>
-      <option value="dirty">Dirty / unknown</option>
-      <option value="mixed">Mixed / attached parts</option>
-    </select>
+<label>Condition</label>
+<select id="condition">
+<option value="1">Clean</option>
+<option value="0.75">Dirty</option>
+<option value="0.5">Mixed</option>
+</select>
 
-    <label>Your city or ZIP</label>
-    <input id="place" value="Tacoma, WA">
+<label>Trip distance (miles)</label>
+<input id="distance" type="number" value="5">
 
-    <button onclick="calculate()">💰 Calculate Decision</button>
-  </div>
+<label>City</label>
+<input id="city" value="Tacoma">
 
-  <div class="card" id="result">
-    <h2>Ready</h2>
-    <p>Use Lens, pick the metal, enter weight, then calculate.</p>
-    <div class="warn">Tip: for your gray melted blob, try Lead + very small weight + dirty/unknown.</div>
-  </div>
+<button onclick="calc()">💰 Analyze</button>
 </div>
+
+<div class="card" id="out"></div>
 
 <div class="card">
-  <h2>2. Save to Inventory</h2>
-  <label>Item name / notes</label>
-  <input id="itemName" value="Metal find">
-  <button onclick="saveItem()">➕ Save Item</button>
-</div>
-
-<div class="card">
-  <h2>3. Inventory</h2>
-  <div id="inventory"></div>
-  <button class="gold" onclick="exportReport()">📄 Export Sell Report</button>
-  <button class="red" onclick="clearInventory()">🗑 Clear Inventory</button>
-</div>
-
-<div class="card">
-  <h2>API Settings</h2>
-  <p class="muted">Future-ready. Store a pricing API key here later. V3 works without it using fallback estimates.</p>
-  <input id="apiKey" placeholder="Optional scrap pricing API key">
-  <button class="dark" onclick="saveApiKey()">Save API Key Locally</button>
+<h3>Inventory</h3>
+<div id="inv"></div>
+<button onclick="save()">➕ Save Item</button>
+<button onclick="clearInv()">🗑 Clear</button>
 </div>
 
 </div>
-
-<div class="footer">Built for fast storage-unit decisions, not spreadsheet archaeology.</div>
 
 <script>
-const metals = {
-  lead:{
-    name:"Lead", low:.35, high:.75, resale:1.2,
-    tip:"Very heavy, soft, dull gray. Wash hands. Do not sand, grind, or melt.",
-    hazard:"Possible lead exposure. Handle with gloves or wash hands after."
-  },
-  aluminum:{
-    name:"Aluminum", low:.30, high:.75, resale:1.3,
-    tip:"Lightweight. Clean sorted aluminum pays better than mixed aluminum.",
-    hazard:"Usually low risk, but avoid fumes from unknown melted material."
-  },
-  copper:{
-    name:"Copper", low:2.50, high:4.25, resale:2.0,
-    tip:"High-value scrap. Bare bright copper usually pays best.",
-    hazard:"Strip only if the time is worth the value."
-  },
-  brass:{
-    name:"Brass", low:1.20, high:2.40, resale:1.8,
-    tip:"Yellow/gold tone. Remove steel screws and mixed attachments.",
-    hazard:"Some brass items are better resold than scrapped."
-  },
-  steel:{
-    name:"Steel / Iron", low:.03, high:.12, resale:.8,
-    tip:"Magnetic. Usually needs serious weight to be worth a trip.",
-    hazard:"Watch sharp rusty edges."
-  },
-  stainless:{
-    name:"Stainless Steel", low:.25, high:.90, resale:1.2,
-    tip:"Silver and rust-resistant. Separate from regular steel.",
-    hazard:"Some stainless is weakly magnetic."
-  },
-  zinc:{
-    name:"Zinc / Die Cast", low:.20, high:.60, resale:1.0,
-    tip:"Often brittle cast metal. Not usually high value.",
-    hazard:"Do not melt zinc. Fumes can be dangerous."
-  },
-  battery:{
-    name:"Car Battery", low:.12, high:.25, resale:1.0,
-    tip:"Most scrap yards and auto parts stores take batteries.",
-    hazard:"Contains acid and lead. Keep upright. Do not open."
-  },
-  wire:{
-    name:"Insulated Copper Wire", low:.60, high:2.00, resale:1.4,
-    tip:"Can be worth more if stripped, but only if your time makes sense.",
-    hazard:"Do not burn insulation. Toxic fumes and illegal in many places."
-  }
+
+// MARKET PROXY PRICES (realistic ranges)
+const market={
+copper:3.6,
+brass:2.1,
+aluminum:0.65,
+lead:0.55,
+steel:0.09
 };
 
-let lastResult = null;
-
-function openLens(){
-  window.open("https://lens.google.com/","_blank");
+// SMART DECISION ENGINE
+function decision(metal,val,weight,distance){
+if(val < 3) return "WAIT - build more weight";
+if(metal==="steel" && weight < 60) return "NOT worth the trip";
+if(distance > 15 && val < 25) return "Not worth fuel/time yet";
+if(metal==="copper"||metal==="brass"){
+if(val > 30) return "SELL NOW or check resale";
+return "Compare eBay vs scrap";
+}
+if(val > 40) return "SELL TODAY";
+return "Scrap if convenient";
 }
 
-function saveApiKey(){
-  localStorage.setItem("scrapApiKey", document.getElementById("apiKey").value.trim());
-  alert("API key saved locally.");
+// PROFIT SCORE
+function score(val,metal){
+let s=val*3;
+if(metal==="copper") s+=20;
+if(metal==="brass") s+=10;
+return Math.min(100,Math.round(s));
 }
 
-function conditionMultiplier(c){
-  if(c==="clean") return 1.0;
-  if(c==="dirty") return 0.75;
-  if(c==="mixed") return 0.55;
-  return 1;
+let last=null;
+
+function calc(){
+let m=document.getElementById("metal").value;
+let w=parseFloat(document.getElementById("weight").value);
+let c=parseFloat(document.getElementById("condition").value);
+let d=parseFloat(document.getElementById("distance").value);
+let city=document.getElementById("city").value;
+
+let price=market[m];
+let total=w*price*c;
+
+let s=score(total,m);
+let dec=decision(m,total,w,d);
+
+let maps=`https://www.google.com/maps/search/scrap+yard+near+${city}`;
+let ebay=`https://www.ebay.com/sch/i.html?_nkw=${m}&LH_Sold=1`;
+
+let tip="";
+if(m==="copper") tip="Strip only if time > value gain";
+if(m==="steel") tip="Only worth it in bulk";
+if(m==="lead") tip="Wash hands, do not grind";
+
+last={m,w,total,dec,s};
+
+document.getElementById("out").innerHTML=`
+<div class="big">$${total.toFixed(2)}</div>
+<p>Estimated payout</p>
+
+<p><b>Score:</b> ${s}/100</p>
+
+<div class="good">${dec}</div>
+
+<div class="warn">${tip}</div>
+
+<br>
+<a href="${maps}" target="_blank">📍 Find scrap yards</a><br>
+<a href="${ebay}" target="_blank">🔎 Check resale value</a>
+`;
 }
 
-function profitScore(avg, metal, weight){
-  let score = 0;
-  if(avg >= 5) score += 25;
-  if(avg >= 15) score += 25;
-  if(avg >= 40) score += 25;
-  if(["copper","brass","wire","battery"].includes(metal)) score += 15;
-  if(metal==="steel" && weight < 50) score -= 20;
-  if(avg < 2) score -= 20;
-  return Math.max(0, Math.min(100, score));
+function save(){
+if(!last)return;
+let items=JSON.parse(localStorage.getItem("inv")||"[]");
+items.push(last);
+localStorage.setItem("inv",JSON.stringify(items));
+render();
 }
 
-function decisionText(avg, metal, weight){
-  if(metal==="steel" && weight < 50) return "NOT WORTH A SPECIAL TRIP";
-  if(avg < 2) return "TOSS IN SCRAP BUCKET UNTIL YOU HAVE MORE";
-  if(avg < 5) return "SAVE UNTIL YOU HAVE MORE WEIGHT";
-  if(["copper","brass","wire"].includes(metal)) return "CALL 3 YARDS OR CHECK RESALE";
-  if(avg > 25) return "SELL TODAY IF YARD PRICE IS GOOD";
-  return "SCRAP IT IF YOU ARE ALREADY GOING";
+function render(){
+let items=JSON.parse(localStorage.getItem("inv")||"[]");
+let total=0;
+let html="";
+items.forEach(x=>{
+total+=x.total;
+html+=`<div class="item">${x.m} - $${x.total.toFixed(2)}</div>`;
+});
+document.getElementById("inv").innerHTML=
+`<div class="big">$${total.toFixed(2)}</div>`+html;
 }
 
-function calculate(){
-  const metal = document.getElementById("metal").value;
-  const weight = parseFloat(document.getElementById("weight").value || 0);
-  const condition = document.getElementById("condition").value;
-  const place = document.getElementById("place").value || "near me";
-  const p = metals[metal];
-  const mult = conditionMultiplier(condition);
-
-  const low = weight * p.low * mult;
-  const high = weight * p.high * mult;
-  const avg = (low + high) / 2;
-  const score = profitScore(avg, metal, weight);
-  const decision = decisionText(avg, metal, weight);
-
-  const maps = "https://www.google.com/maps/search/scrap+yard+near+" + encodeURIComponent(place);
-  const ebaySold = "https://www.ebay.com/sch/i.html?_nkw=" + encodeURIComponent(p.name + " scrap metal") + "&LH_Sold=1&LH_Complete=1";
-  const ebayActive = "https://www.ebay.com/sch/i.html?_nkw=" + encodeURIComponent(p.name + " metal lot");
-  const call = `Do you buy ${p.name}? What is today's price per pound? Do you take ${condition} material? Do you require ID?`;
-
-  lastResult = {
-    itemName: document.getElementById("itemName").value || "Metal find",
-    metal:p.name, metalKey:metal, weight, condition, low, high, avg, score,
-    decision, place, call, date:new Date().toLocaleString()
-  };
-
-  document.getElementById("result").innerHTML = `
-    <h2>Profit Decision</h2>
-    <div class="big">$${low.toFixed(2)} - $${high.toFixed(2)}</div>
-    <p>Average estimate: <b>$${avg.toFixed(2)}</b></p>
-
-    <h3>Profit Score: ${score}/100</h3>
-    <div class="scorebar"><div class="scorefill" style="width:${score}%"></div></div>
-
-    <div class="good"><b>${decision}</b></div>
-
-    <p>
-      <span class="pill">${p.name}</span>
-      <span class="pill">${weight} lb</span>
-      <span class="pill">${condition}</span>
-    </p>
-
-    <div class="warn"><b>Handling:</b> ${p.hazard}<br><br><b>Tip:</b> ${p.tip}</div>
-
-    <h3>Sell / Compare</h3>
-    <p><a href="${maps}" target="_blank">📍 Nearby scrap yards</a></p>
-    <p><a href="${ebaySold}" target="_blank">🔎 eBay sold comps</a></p>
-    <p><a href="${ebayActive}" target="_blank">🛒 eBay active listings</a></p>
-
-    <h3>Call Script</h3>
-    <textarea rows="4">${call}</textarea>
-  `;
+function clearInv(){
+localStorage.removeItem("inv");
+render();
 }
 
-function saveItem(){
-  if(!lastResult){ calculate(); }
-  lastResult.itemName = document.getElementById("itemName").value || lastResult.itemName;
-  const items = JSON.parse(localStorage.getItem("scrapItems") || "[]");
-  items.push(lastResult);
-  localStorage.setItem("scrapItems", JSON.stringify(items));
-  renderInventory();
-}
-
-function renderInventory(){
-  const items = JSON.parse(localStorage.getItem("scrapItems") || "[]");
-  let totalLow = 0, totalHigh = 0, html = "";
-
-  items.forEach((x,i)=>{
-    totalLow += x.low;
-    totalHigh += x.high;
-    html += `
-      <div class="item">
-        <b>${i+1}. ${x.itemName}</b><br>
-        <span class="muted">${x.date}</span><br>
-        ${x.metal} | ${x.weight} lb | ${x.condition}<br>
-        Estimate: <b>$${x.low.toFixed(2)} - $${x.high.toFixed(2)}</b><br>
-        Score: ${x.score}/100<br>
-        Decision: ${x.decision}
-      </div>
-    `;
-  });
-
-  if(items.length === 0){
-    html = "<p class='muted'>No saved items yet.</p>";
-  }
-
-  document.getElementById("inventory").innerHTML = `
-    <div class="big">$${totalLow.toFixed(2)} - $${totalHigh.toFixed(2)}</div>
-    <p>Total estimated inventory value</p>
-    ${html}
-  `;
-}
-
-function exportReport(){
-  const items = JSON.parse(localStorage.getItem("scrapItems") || "[]");
-  let txt = "SCRAP PROFIT ASSISTANT V3 REPORT\n\n";
-  let low = 0, high = 0;
-
-  items.forEach((x,i)=>{
-    low += x.low;
-    high += x.high;
-    txt += `${i+1}. ${x.itemName}\n`;
-    txt += `Date: ${x.date}\n`;
-    txt += `Metal: ${x.metal}\n`;
-    txt += `Weight: ${x.weight} lb\n`;
-    txt += `Condition: ${x.condition}\n`;
-    txt += `Estimate: $${x.low.toFixed(2)} - $${x.high.toFixed(2)}\n`;
-    txt += `Profit Score: ${x.score}/100\n`;
-    txt += `Decision: ${x.decision}\n`;
-    txt += `Call Script: ${x.call}\n\n`;
-  });
-
-  txt += `TOTAL ESTIMATE: $${low.toFixed(2)} - $${high.toFixed(2)}\n`;
-
-  const blob = new Blob([txt], {type:"text/plain"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "scrap_profit_report_v3.txt";
-  a.click();
-}
-
-function clearInventory(){
-  if(confirm("Clear saved inventory?")){
-    localStorage.removeItem("scrapItems");
-    renderInventory();
-  }
-}
-
-document.getElementById("apiKey").value = localStorage.getItem("scrapApiKey") || "";
-renderInventory();
+render();
 </script>
+
 </body>
 </html>
