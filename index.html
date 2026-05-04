@@ -1,39 +1,121 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="apple-mobile-web-app-capable" content="yes">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scrap Profit Assistant</title>
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Scrap App">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2933/2933245.png"><link rel="manifest" href="manifest.json">>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scrap Profit Assistant V6</title>
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2933/2933245.png">
 
 <style>
-body{margin:0;font-family:Arial;background:#071018;color:#edf6ff}
-header{padding:20px;background:linear-gradient(135deg,#0e2a3a,#143b28)}
-.wrap{padding:16px;max-width:900px;margin:auto}
-.card{background:#101b26;border:1px solid #26394b;border-radius:16px;padding:16px;margin:14px 0}
-button,input,select{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #344a60;background:#0a121b;color:#fff}
-button{background:#22c55e;color:#06110a;font-weight:bold}
-.secondary{background:#2563eb}
-.big{font-size:34px;font-weight:bold;color:#38bdf8}
-.good{background:#11331e;padding:10px;border-radius:12px;margin-top:10px}
-.warn{background:#3a2410;padding:10px;border-radius:12px;margin-top:10px}
-.item{background:#142333;padding:10px;border-radius:12px;margin:8px 0}
+body{
+margin:0;
+font-family:system-ui;
+background:linear-gradient(180deg,#071018,#0c1b26);
+color:#fff
+}
+
+header{
+padding:20px;
+font-size:22px;
+font-weight:bold
+}
+
+.container{
+padding:15px;
+max-width:900px;
+margin:auto
+}
+
+.card{
+background:#0f1f2b;
+border-radius:18px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.4)
+}
+
+label{
+display:block;
+margin-top:10px;
+font-size:14px;
+color:#a9c3d8
+}
+
+input,select,button{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:12px;
+border:none;
+font-size:16px
+}
+
+input,select{
+background:#08141d;
+color:white
+}
+
+button{
+background:#22c55e;
+color:#03120a;
+font-weight:bold
+}
+
+.secondary{
+background:#2563eb;
+color:white
+}
+
+.big{
+font-size:32px;
+font-weight:bold;
+color:#38bdf8
+}
+
+.scorebar{
+height:10px;
+background:#1b2f3f;
+border-radius:10px;
+margin-top:8px;
+overflow:hidden
+}
+
+.fill{
+height:100%;
+background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)
+}
+
+.action{
+margin-top:10px;
+padding:10px;
+border-radius:10px;
+background:#16313f
+}
+
+.item{
+background:#142333;
+padding:10px;
+border-radius:10px;
+margin-top:8px
+}
 </style>
 </head>
 
 <body>
 
-<header>
-<h1>🧲 Scrap Profit Assistant V6</h1>
-<div>Market-aware decisions. Real-world scrap strategy.</div>
-</header>
+<header>🧲 Scrap Profit Assistant</header>
 
-<div class="wrap">
+<div class="container">
 
 <div class="card">
-<button class="secondary" onclick="window.open('https://lens.google.com/','_blank')">
-📸 Open Google Lens
+
+<button class="secondary" onclick="window.open('https://lens.google.com/')">
+📸 Identify with Google Lens
 </button>
 
 <label>Metal</label>
@@ -55,30 +137,30 @@ button{background:#22c55e;color:#06110a;font-weight:bold}
 <option value="0.5">Mixed</option>
 </select>
 
-<label>Trip distance (miles)</label>
-<input id="distance" type="number" value="5">
+<label>Distance to yard (miles)</label>
+<input id="distance" value="5">
 
 <label>City</label>
 <input id="city" value="Tacoma">
 
-<button onclick="calc()">💰 Analyze</button>
+<button onclick="analyze()">Analyze</button>
+
 </div>
 
-<div class="card" id="out"></div>
+<div class="card" id="result"></div>
 
 <div class="card">
 <h3>Inventory</h3>
-<div id="inv"></div>
-<button onclick="save()">➕ Save Item</button>
-<button onclick="clearInv()">🗑 Clear</button>
+<div id="inventory"></div>
+<button onclick="save()">Save Item</button>
+<button onclick="clearInv()">Clear</button>
 </div>
 
 </div>
 
 <script>
 
-// MARKET PROXY PRICES (realistic ranges)
-const market={
+const prices={
 copper:3.6,
 brass:2.1,
 aluminum:0.65,
@@ -86,65 +168,53 @@ lead:0.55,
 steel:0.09
 };
 
-// SMART DECISION ENGINE
-function decision(metal,val,weight,distance){
-if(val < 3) return "WAIT - build more weight";
-if(metal==="steel" && weight < 60) return "NOT worth the trip";
-if(distance > 15 && val < 25) return "Not worth fuel/time yet";
-if(metal==="copper"||metal==="brass"){
-if(val > 30) return "SELL NOW or check resale";
-return "Compare eBay vs scrap";
-}
-if(val > 40) return "SELL TODAY";
-return "Scrap if convenient";
-}
-
-// PROFIT SCORE
-function score(val,metal){
-let s=val*3;
-if(metal==="copper") s+=20;
-if(metal==="brass") s+=10;
-return Math.min(100,Math.round(s));
-}
-
 let last=null;
 
-function calc(){
+function decision(val,metal,weight,distance){
+if(val<3) return "Wait — build more weight";
+if(metal==="steel"&&weight<60) return "Not worth trip";
+if(distance>15 && val<25) return "Fuel cost too high";
+if(metal==="copper"||metal==="brass") return "Check resale before scrap";
+if(val>40) return "Sell now";
+return "Sell if convenient";
+}
+
+function analyze(){
 let m=document.getElementById("metal").value;
 let w=parseFloat(document.getElementById("weight").value);
 let c=parseFloat(document.getElementById("condition").value);
 let d=parseFloat(document.getElementById("distance").value);
 let city=document.getElementById("city").value;
 
-let price=market[m];
-let total=w*price*c;
+let val=w*prices[m]*c;
 
-let s=score(total,m);
-let dec=decision(m,total,w,d);
+let score=Math.min(100,Math.round(val*3 + (m==="copper"?20:0)));
+
+let dec=decision(val,m,w,d);
 
 let maps=`https://www.google.com/maps/search/scrap+yard+near+${city}`;
 let ebay=`https://www.ebay.com/sch/i.html?_nkw=${m}&LH_Sold=1`;
 
-let tip="";
-if(m==="copper") tip="Strip only if time > value gain";
-if(m==="steel") tip="Only worth it in bulk";
-if(m==="lead") tip="Wash hands, do not grind";
+last={m,val};
 
-last={m,w,total,dec,s};
+document.getElementById("result").innerHTML=`
+<div class="big">$${val.toFixed(2)}</div>
 
-document.getElementById("out").innerHTML=`
-<div class="big">$${total.toFixed(2)}</div>
-<p>Estimated payout</p>
+<div>Profit Score: ${score}/100</div>
 
-<p><b>Score:</b> ${s}/100</p>
+<div class="scorebar">
+<div class="fill" style="width:${score}%"></div>
+</div>
 
-<div class="good">${dec}</div>
+<div class="action">${dec}</div>
 
-<div class="warn">${tip}</div>
+<div class="action">
+<a href="${maps}" target="_blank">📍 Find Buyers</a>
+</div>
 
-<br>
-<a href="${maps}" target="_blank">📍 Find scrap yards</a><br>
-<a href="${ebay}" target="_blank">🔎 Check resale value</a>
+<div class="action">
+<a href="${ebay}" target="_blank">🔎 Check Resale</a>
+</div>
 `;
 }
 
@@ -161,10 +231,10 @@ let items=JSON.parse(localStorage.getItem("inv")||"[]");
 let total=0;
 let html="";
 items.forEach(x=>{
-total+=x.total;
-html+=`<div class="item">${x.m} - $${x.total.toFixed(2)}</div>`;
+total+=x.val;
+html+=`<div class="item">${x.m} - $${x.val.toFixed(2)}</div>`;
 });
-document.getElementById("inv").innerHTML=
+document.getElementById("inventory").innerHTML=
 `<div class="big">$${total.toFixed(2)}</div>`+html;
 }
 
@@ -174,6 +244,7 @@ render();
 }
 
 render();
+
 </script>
 
 </body>
