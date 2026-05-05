@@ -4,16 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#071018" />
-  <title>Storage Unit Value Scanner v2</title>
-  <link rel="manifest" href="manifest.json?v=2" />
-  <link rel="stylesheet" href="style.css?v=2" />
+  <title>Storage Unit Value Scanner v3</title>
+  <link rel="manifest" href="manifest.json?v=3" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
   <header class="hero">
     <div>
-      <p class="eyebrow">Storage Unit Profit Tool • v2</p>
+      <p class="eyebrow">Storage Unit Profit Tool • v3 tested flow</p>
       <h1>Value Scanner</h1>
-      <p class="sub">Photo-first storage-unit resale helper. Take a picture, identify the item, verify comps, price it, save it, and post it.</p>
+      <p class="sub">Honest resale helper: photo preview, item identification workflow, real comp entry, pricing math, inventory, and listing post. It will not make up values from a photo.</p>
     </div>
     <button id="installBtn" class="ghost hidden">Install App</button>
   </header>
@@ -21,7 +21,7 @@
   <main class="shell">
     <section class="card scanner-card">
       <h2>1. Scan or describe the item</h2>
-      <p class="hint">Use the camera button first. Then use the research buttons to identify the item and find sold comps.</p>
+      <p class="hint">Take/upload a photo, identify the item using Lens or image search, then enter actual sold comps. No fake same-price results.</p>
 
       <label class="cameraButton" for="photoInput">📷 Take / Upload Item Photo</label>
       <input id="photoInput" class="fileInput" type="file" accept="image/*" capture="environment" />
@@ -31,7 +31,7 @@
         <button class="blue" onclick="openTool('googleApp')">🔎 Open Google App / Lens</button>
         <button class="blue" onclick="openTool('ebayImage')">🛒 Open eBay Image Search</button>
       </div>
-      <p class="tiny">Note: websites cannot directly control Google Lens photo upload. This button opens the Google app/Lens path when Android allows it. The photo picker above always works inside this app.</p>
+      <p class="tiny">Important: this free GitHub Pages version cannot run paid image-recognition APIs. It helps you capture the photo, identify it with outside tools, then price it from real comps.</p>
 
       <label>Item name / best guess</label>
       <input id="itemName" placeholder="Example: vintage Coleman lantern, saddle, Snap-on wrench set" />
@@ -104,7 +104,7 @@
 
     <section class="card result-card" id="result">
       <h2>2. Result</h2>
-      <p class="empty">Take/upload a photo, enter the item name and comps, then calculate the resale plan.</p>
+      <p class="empty">Take/upload a photo, enter the item name and real comps, then calculate the resale plan.</p>
     </section>
 
     <section class="card">
@@ -127,6 +127,6 @@
     Built for fast storage-unit triage. Verify rare items before selling low.
   </footer>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
