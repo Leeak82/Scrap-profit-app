@@ -4,16 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#071018" />
-  <title>Storage Unit Value Scanner v3</title>
-  <link rel="manifest" href="manifest.json?v=3" />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <title>Storage Unit Value Scanner v4 Live</title>
+  <link rel="manifest" href="manifest.json?v=4" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
   <header class="hero">
     <div>
-      <p class="eyebrow">Storage Unit Profit Tool • v3 tested flow</p>
+      <p class="eyebrow">Storage Unit Profit Tool • v4 live-ready</p>
       <h1>Value Scanner</h1>
-      <p class="sub">Honest resale helper: photo preview, item identification workflow, real comp entry, pricing math, inventory, and listing post. It will not make up values from a photo.</p>
+      <p class="sub">Live-ready resale helper: photo preview, item identification workflow, eBay active listing compare via backend, pricing math, inventory, and listing post.</p>
     </div>
     <button id="installBtn" class="ghost hidden">Install App</button>
   </header>
@@ -21,7 +21,7 @@
   <main class="shell">
     <section class="card scanner-card">
       <h2>1. Scan or describe the item</h2>
-      <p class="hint">Take/upload a photo, identify the item using Lens or image search, then enter actual sold comps. No fake same-price results.</p>
+      <p class="hint">Take/upload a photo, identify the item, then run live compare after your backend API is connected.</p>
 
       <label class="cameraButton" for="photoInput">📷 Take / Upload Item Photo</label>
       <input id="photoInput" class="fileInput" type="file" accept="image/*" capture="environment" />
@@ -31,10 +31,18 @@
         <button class="blue" onclick="openTool('googleApp')">🔎 Open Google App / Lens</button>
         <button class="blue" onclick="openTool('ebayImage')">🛒 Open eBay Image Search</button>
       </div>
-      <p class="tiny">Important: this free GitHub Pages version cannot run paid image-recognition APIs. It helps you capture the photo, identify it with outside tools, then price it from real comps.</p>
 
       <label>Item name / best guess</label>
       <input id="itemName" placeholder="Example: vintage Coleman lantern, saddle, Snap-on wrench set" />
+
+      <details class="scrapBox" open>
+        <summary>Live compare settings</summary>
+        <label>Backend API URL</label>
+        <input id="apiBase" placeholder="Example: https://your-value-scanner-api.onrender.com" />
+        <button class="blue" onclick="saveApiBase()">Save API URL</button>
+        <button class="green" onclick="liveCompare()">Live Compare Current Listings</button>
+        <p class="tiny">GitHub Pages hosts the app only. Live results require the included backend deployed with eBay API credentials.</p>
+      </details>
 
       <label>Category</label>
       <select id="category">
@@ -70,11 +78,11 @@
 
       <div class="grid two">
         <div>
-          <label>Lowest sold/realistic comp found</label>
+          <label>Lowest current/realistic comp found</label>
           <input id="lowComp" type="number" min="0" step="1" placeholder="Example: 40" />
         </div>
         <div>
-          <label>Highest realistic comp found</label>
+          <label>Highest current/realistic comp found</label>
           <input id="highComp" type="number" min="0" step="1" placeholder="Example: 120" />
         </div>
       </div>
@@ -104,17 +112,23 @@
 
     <section class="card result-card" id="result">
       <h2>2. Result</h2>
-      <p class="empty">Take/upload a photo, enter the item name and real comps, then calculate the resale plan.</p>
+      <p class="empty">Enter an item name, run live compare or enter comps, then calculate the resale plan.</p>
+    </section>
+
+    <section class="card" id="liveResultsCard">
+      <h2>3. Live compare results</h2>
+      <p class="hint">Current listing results will appear here after the backend is connected.</p>
+      <div id="liveResults"></div>
     </section>
 
     <section class="card">
-      <h2>3. Research links</h2>
-      <p class="hint">Use these links to verify comps before listing. This version avoids paid API lock-in.</p>
+      <h2>4. Research links</h2>
+      <p class="hint">Backup links for manual verification.</p>
       <div id="links" class="linkGrid"></div>
     </section>
 
     <section class="card">
-      <h2>4. Inventory</h2>
+      <h2>5. Inventory</h2>
       <div class="grid two">
         <button onclick="saveItem()">Save Current Item</button>
         <button class="danger" onclick="clearInventory()">Clear Inventory</button>
@@ -124,9 +138,9 @@
   </main>
 
   <footer>
-    Built for fast storage-unit triage. Verify rare items before selling low.
+    Built for fast storage-unit triage. Live compare requires backend credentials.
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
