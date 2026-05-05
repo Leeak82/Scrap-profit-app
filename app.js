@@ -1,6 +1,7 @@
 const els = id => document.getElementById(id);
 let currentItem = null;
 let deferredPrompt = null;
+let selectedPhotoName = '';
 
 const scrapRanges = {
   copper: [2.8, 4.2],
@@ -28,7 +29,8 @@ function safeQuery() {
 function openTool(type) {
   const q = safeQuery();
   const urls = {
-    lens: 'https://lens.google.com/',
+    googleApp: `intent://lens.google/#Intent;scheme=https;package=com.google.android.googlequicksearchbox;end`,
+    googleFallback: `https://www.google.com/search?udm=2&q=${q}`,
     ebayImage: 'https://www.ebay.com/b/Visual-Search/bn_7115801858',
     ebaySold: `https://www.ebay.com/sch/i.html?_nkw=${q}&LH_Sold=1&LH_Complete=1`,
     ebayActive: `https://www.ebay.com/sch/i.html?_nkw=${q}`,
@@ -37,11 +39,35 @@ function openTool(type) {
     facebook: `https://www.facebook.com/marketplace/search/?query=${q}`,
     offerup: `https://offerup.com/search?q=${q}`,
     worthpoint: `https://www.google.com/search?q=${q}+worthpoint+sold`,
-    images: `https://www.google.com/search?tbm=isch&q=${q}`,
+    images: `https://www.google.com/search?udm=2&q=${q}`,
     parts: `https://www.google.com/search?q=${q}+part+number+value+sold`,
     maps: `https://www.google.com/maps/search/resale+shop+scrap+yard+near+me`
   };
+
+  if (type === 'googleApp') {
+    const opened = window.open(urls.googleApp, '_blank');
+    setTimeout(() => {
+      if (!opened || opened.closed) window.open(urls.googleFallback, '_blank');
+    }, 700);
+    return;
+  }
+
   window.open(urls[type], '_blank');
+}
+
+function handlePhoto(event) {
+  const file = event.target.files && event.target.files[0];
+  const box = els('photoPreview');
+  if (!file) return;
+  selectedPhotoName = file.name;
+  const url = URL.createObjectURL(file);
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <img src="${url}" alt="Selected item photo" />
+    <div class="action">
+      <b>Photo loaded:</b> ${file.name}<br>
+      <span class="tiny">Now open Google App/Lens or eBay Image Search and compare the photo. Websites cannot send this photo directly into Lens, but this keeps the scan workflow inside your app.</span>
+    </div>`;
 }
 
 function buildLinks() {
@@ -49,10 +75,10 @@ function buildLinks() {
   const base = [
     ['eBay Sold', 'ebaySold'],
     ['eBay Active', 'ebayActive'],
+    ['Google Images', 'images'],
     ['Google Shopping', 'googleShopping'],
     ['Facebook Marketplace', 'facebook'],
-    ['OfferUp', 'offerup'],
-    ['Image Match', 'images']
+    ['OfferUp', 'offerup']
   ];
   if (category === 'tools' || category === 'electronics') base.push(['Amazon', 'amazon']);
   if (category === 'collectibles' || category === 'jewelry') base.push(['WorthPoint Search', 'worthpoint']);
@@ -127,7 +153,7 @@ function analyze() {
   const tips = categoryTips[category] || categoryTips.general;
   const post = listingText(item, category, fastPrice, fairPrice);
 
-  currentItem = { item: item || 'Storage unit find', category, low, high, fairPrice, fastPrice, floorPrice, holdPrice, score, created: new Date().toLocaleString() };
+  currentItem = { item: item || 'Storage unit find', category, low, high, fairPrice, fastPrice, floorPrice, holdPrice, score, photo: selectedPhotoName, created: new Date().toLocaleString() };
 
   els('result').innerHTML = `
     <h2>2. Result</h2>
@@ -186,7 +212,7 @@ function renderInventory() {
   const totalHold = inv.reduce((sum, x) => sum + Number(x.holdPrice || 0), 0);
   els('inventory').innerHTML = `
     <div class="action"><b>Saved items:</b> ${inv.length}<br><b>Fast-sale total:</b> $${totalFast}<br><b>Hold-out total:</b> $${totalHold}</div>
-    ${inv.map(x => `<div class="item"><b>${x.item}</b><br>${x.category} • list $${x.fastPrice} • score ${x.score}/100<br><small>${x.created}</small></div>`).join('')}`;
+    ${inv.map(x => `<div class="item"><b>${x.item}</b><br>${x.category} • list $${x.fastPrice} • score ${x.score}/100${x.photo ? `<br>Photo: ${x.photo}` : ''}<br><small>${x.created}</small></div>`).join('')}`;
 }
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -207,6 +233,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
+els('photoInput').addEventListener('change', handlePhoto);
 ['itemName', 'category'].forEach(id => els(id).addEventListener('input', buildLinks));
 buildLinks();
 renderInventory();
