@@ -13,7 +13,7 @@
     <div>
       <p class="eyebrow">Storage Unit Profit Tool</p>
       <h1>Value Scanner</h1>
-      <p class="sub">Identify storage-unit finds, check resale sources, estimate fast-sale pricing, and write the listing post.</p>
+      <p class="sub">Photo-first storage-unit resale helper. Take a picture, identify the item, verify comps, price it, save it, and post it.</p>
     </div>
     <button id="installBtn" class="ghost hidden">Install App</button>
   </header>
@@ -21,12 +21,17 @@
   <main class="shell">
     <section class="card scanner-card">
       <h2>1. Scan or describe the item</h2>
-      <p class="hint">Take a photo, use Lens/eBay image search, then paste the best item name here.</p>
+      <p class="hint">Use the camera button first. Then use the research buttons to identify the item and find sold comps.</p>
+
+      <label class="cameraButton" for="photoInput">📷 Take / Upload Item Photo</label>
+      <input id="photoInput" class="fileInput" type="file" accept="image/*" capture="environment" />
+      <div id="photoPreview" class="preview hidden"></div>
 
       <div class="grid two">
-        <button class="blue" onclick="openTool('lens')">📸 Google Lens</button>
-        <button class="blue" onclick="openTool('ebayImage')">🛒 eBay Image Search</button>
+        <button class="blue" onclick="openTool('googleApp')">🔎 Open Google App / Lens</button>
+        <button class="blue" onclick="openTool('ebayImage')">🛒 Open eBay Image Search</button>
       </div>
+      <p class="tiny">Note: websites cannot directly control Google Lens photo upload. This button opens the Google app/Lens path when Android allows it. The photo picker above always works inside this app.</p>
 
       <label>Item name / best guess</label>
       <input id="itemName" placeholder="Example: vintage Coleman lantern, saddle, Snap-on wrench set" />
@@ -99,12 +104,12 @@
 
     <section class="card result-card" id="result">
       <h2>2. Result</h2>
-      <p class="empty">Enter an item and comps. This app will calculate a pricing band and build your selling plan.</p>
+      <p class="empty">Take/upload a photo, enter the item name and comps, then calculate the resale plan.</p>
     </section>
 
     <section class="card">
       <h2>3. Research links</h2>
-      <p class="hint">Use these links to verify comps before listing. The app is no-key and no-paid-API by design.</p>
+      <p class="hint">Use these links to verify comps before listing. This version avoids paid API lock-in.</p>
       <div id="links" class="linkGrid"></div>
     </section>
 
