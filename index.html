@@ -1,157 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scrap Profit Assistant</title>
-
-<style>
-body{margin:0;font-family:system-ui;background:#071018;color:#fff}
-header{padding:18px;font-size:22px;font-weight:bold}
-.container{padding:14px;max-width:900px;margin:auto}
-.card{background:#0f1f2b;border-radius:16px;padding:14px;margin-bottom:14px}
-button,input,select{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:none}
-button{background:#22c55e;color:#03120a;font-weight:bold}
-.secondary{background:#2563eb;color:white}
-.big{font-size:30px;color:#38bdf8}
-.action{margin-top:10px;padding:10px;border-radius:10px;background:#16313f}
-.item{background:#142333;padding:10px;border-radius:10px;margin-top:8px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#071018" />
+  <title>Storage Unit Value Scanner</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Storage Unit Profit Tool</p>
+      <h1>Value Scanner</h1>
+      <p class="sub">Identify storage-unit finds, check resale sources, estimate fast-sale pricing, and write the listing post.</p>
+    </div>
+    <button id="installBtn" class="ghost hidden">Install App</button>
+  </header>
 
-<header>🧲 Scrap Profit Assistant</header>
+  <main class="shell">
+    <section class="card scanner-card">
+      <h2>1. Scan or describe the item</h2>
+      <p class="hint">Take a photo, use Lens/eBay image search, then paste the best item name here.</p>
 
-<div class="container">
+      <div class="grid two">
+        <button class="blue" onclick="openTool('lens')">📸 Google Lens</button>
+        <button class="blue" onclick="openTool('ebayImage')">🛒 eBay Image Search</button>
+      </div>
 
-<div class="card">
+      <label>Item name / best guess</label>
+      <input id="itemName" placeholder="Example: vintage Coleman lantern, saddle, Snap-on wrench set" />
 
-<button class="secondary" onclick="window.open('https://lens.google.com/')">
-📸 Identify Item
-</button>
+      <label>Category</label>
+      <select id="category">
+        <option value="general">General resale</option>
+        <option value="tools">Tools</option>
+        <option value="auto">Auto parts</option>
+        <option value="electronics">Electronics</option>
+        <option value="collectibles">Collectibles / vintage</option>
+        <option value="furniture">Furniture / home</option>
+        <option value="jewelry">Jewelry / watches</option>
+        <option value="scrap">Scrap metal</option>
+      </select>
 
-<label>Metal</label>
-<select id="metal">
-<option value="copper">Copper</option>
-<option value="brass">Brass</option>
-<option value="aluminum">Aluminum</option>
-<option value="lead">Lead</option>
-<option value="steel">Steel</option>
-</select>
+      <div class="grid two">
+        <div>
+          <label>Condition</label>
+          <select id="condition">
+            <option value="0.9">Excellent</option>
+            <option value="0.75" selected>Good</option>
+            <option value="0.55">Used / dirty</option>
+            <option value="0.35">Parts / repair</option>
+          </select>
+        </div>
+        <div>
+          <label>Urgency</label>
+          <select id="urgency">
+            <option value="0.85">Fast sale</option>
+            <option value="1" selected>Fair price</option>
+            <option value="1.18">Hold out</option>
+          </select>
+        </div>
+      </div>
 
-<label>Weight (lbs)</label>
-<input id="weight" type="number" value="1">
+      <div class="grid two">
+        <div>
+          <label>Lowest sold/realistic comp found</label>
+          <input id="lowComp" type="number" min="0" step="1" placeholder="Example: 40" />
+        </div>
+        <div>
+          <label>Highest realistic comp found</label>
+          <input id="highComp" type="number" min="0" step="1" placeholder="Example: 120" />
+        </div>
+      </div>
 
-<label>Condition</label>
-<select id="condition">
-<option value="1">Clean</option>
-<option value="0.75">Dirty</option>
-<option value="0.5">Mixed</option>
-</select>
+      <details class="scrapBox">
+        <summary>Optional scrap metal calculator</summary>
+        <div class="grid two">
+          <div>
+            <label>Metal</label>
+            <select id="metal">
+              <option value="copper">Copper</option>
+              <option value="brass">Brass</option>
+              <option value="aluminum">Aluminum</option>
+              <option value="lead">Lead</option>
+              <option value="steel">Steel</option>
+            </select>
+          </div>
+          <div>
+            <label>Weight lbs</label>
+            <input id="weight" type="number" value="1" min="0" step="0.1" />
+          </div>
+        </div>
+      </details>
 
-<label>Distance (miles)</label>
-<input id="distance" value="5">
+      <button class="green" onclick="analyze()">Analyze Value</button>
+    </section>
 
-<label>City</label>
-<input id="city" value="Tacoma">
+    <section class="card result-card" id="result">
+      <h2>2. Result</h2>
+      <p class="empty">Enter an item and comps. This app will calculate a pricing band and build your selling plan.</p>
+    </section>
 
-<button onclick="run()">Analyze</button>
+    <section class="card">
+      <h2>3. Research links</h2>
+      <p class="hint">Use these links to verify comps before listing. The app is no-key and no-paid-API by design.</p>
+      <div id="links" class="linkGrid"></div>
+    </section>
 
-</div>
+    <section class="card">
+      <h2>4. Inventory</h2>
+      <div class="grid two">
+        <button onclick="saveItem()">Save Current Item</button>
+        <button class="danger" onclick="clearInventory()">Clear Inventory</button>
+      </div>
+      <div id="inventory"></div>
+    </section>
+  </main>
 
-<div class="card" id="out"></div>
+  <footer>
+    Built for fast storage-unit triage. Verify rare items before selling low.
+  </footer>
 
-<div class="card">
-<h3>Inventory</h3>
-<div id="inv"></div>
-<button onclick="save()">Save</button>
-<button onclick="clearInv()">Clear</button>
-</div>
-
-</div>
-
-<script>
-
-const ranges={
-copper:[2.8,4.2],
-brass:[1.5,2.5],
-aluminum:[0.3,0.8],
-lead:[0.3,0.7],
-steel:[0.03,0.12]
-};
-
-let last=null;
-
-function decision(avg,metal,weight,distance){
-if(avg<3) return "Wait — not enough value yet";
-if(metal==="steel"&&weight<60) return "Steel needs bulk — not worth trip";
-if(distance>15 && avg<25) return "Fuel cost too high for payout";
-if(metal==="copper"||metal==="brass") return "Check resale vs scrap";
-if(avg>40) return "Sell immediately";
-return "Scrap if you're already going";
-}
-
-function run(){
-let m=document.getElementById("metal").value;
-let w=parseFloat(document.getElementById("weight").value);
-let c=parseFloat(document.getElementById("condition").value);
-let d=parseFloat(document.getElementById("distance").value);
-let city=document.getElementById("city").value;
-
-let low=ranges[m][0]*w*c;
-let high=ranges[m][1]*w*c;
-let avg=(low+high)/2;
-
-let dec=decision(avg,m,w,d);
-
-let maps=`https://www.google.com/maps/search/scrap+yard+near+${city}`;
-let ebay=`https://www.ebay.com/sch/i.html?_nkw=${m}&LH_Sold=1`;
-
-last={m,avg};
-
-document.getElementById("out").innerHTML=`
-<div class="big">$${low.toFixed(2)} - $${high.toFixed(2)}</div>
-<p>Average: $${avg.toFixed(2)}</p>
-
-<div class="action">${dec}</div>
-
-<div class="action">
-<a href="${maps}" target="_blank">📍 Find Buyers</a>
-</div>
-
-<div class="action">
-<a href="${ebay}" target="_blank">🔎 Check Resale</a>
-</div>
-`;
-}
-
-function save(){
-if(!last)return;
-let items=JSON.parse(localStorage.getItem("inv")||"[]");
-items.push(last);
-localStorage.setItem("inv",JSON.stringify(items));
-render();
-}
-
-function render(){
-let items=JSON.parse(localStorage.getItem("inv")||"[]");
-let total=0,html="";
-items.forEach(x=>{
-total+=x.avg;
-html+=`<div class="item">${x.m} - $${x.avg.toFixed(2)}</div>`;
-});
-document.getElementById("inv").innerHTML=
-`<div class="big">$${total.toFixed(2)}</div>`+html;
-}
-
-function clearInv(){
-localStorage.removeItem("inv");
-render();
-}
-
-render();
-
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
