@@ -51,7 +51,6 @@ function openTool(type) {
     }, 700);
     return;
   }
-
   window.open(urls[type], '_blank');
 }
 
@@ -60,13 +59,19 @@ function handlePhoto(event) {
   const box = els('photoPreview');
   if (!file) return;
   selectedPhotoName = file.name;
+  currentItem = null;
   const url = URL.createObjectURL(file);
   box.classList.remove('hidden');
   box.innerHTML = `
     <img src="${url}" alt="Selected item photo" />
-    <div class="action">
-      <b>Photo loaded:</b> ${file.name}<br>
-      <span class="tiny">Now open Google App/Lens or eBay Image Search and compare the photo. Websites cannot send this photo directly into Lens, but this keeps the scan workflow inside your app.</span>
+    <div class="action warningBox">
+      <b>Photo loaded, not valued yet.</b><br>
+      This free GitHub Pages version cannot truly identify objects from an image by itself. Use Google Lens/eBay image search, then enter the item name and real comps. No fake numbers.
+    </div>`;
+  els('result').innerHTML = `
+    <h2>2. Result</h2>
+    <div class="action warningBox">
+      <b>Next move:</b> Identify this photo first, then enter sold comps. The app will not price random photos until it has actual item/comparison data.
     </div>`;
 }
 
@@ -84,7 +89,6 @@ function buildLinks() {
   if (category === 'collectibles' || category === 'jewelry') base.push(['WorthPoint Search', 'worthpoint']);
   if (category === 'auto') base.push(['Part Number Search', 'parts']);
   if (category === 'scrap') base.push(['Local Buyers', 'maps']);
-
   els('links').innerHTML = base.map(([label, key]) => `<a href="#" onclick="openTool('${key}')">${label}</a>`).join('');
 }
 
@@ -132,15 +136,39 @@ function analyze() {
     high = scrap.high;
   }
 
-  if (!item && !low && !high) {
-    els('result').innerHTML = '<h2>2. Result</h2><p class="empty">Add an item name or price comps first.</p>';
+  if (!item) {
+    currentItem = null;
+    els('result').innerHTML = `
+      <h2>2. Result</h2>
+      <div class="action warningBox">
+        <b>No value yet.</b><br>
+        Enter the item name first. A photo alone is not enough in this no-paid-API web version.
+      </div>`;
+    buildLinks();
+    return;
+  }
+
+  if (!low && !high) {
+    currentItem = null;
+    els('result').innerHTML = `
+      <h2>2. Result</h2>
+      <div class="action warningBox">
+        <b>${item}</b><br>
+        I will not make up a price. Tap eBay Sold / Google Shopping / Marketplace links, find 2 realistic comps, then enter low and high prices.
+      </div>
+      <div class="action">
+        <b>Fast workflow:</b><br>
+        1. Tap eBay Sold<br>
+        2. Search same brand/model/condition<br>
+        3. Enter the lowest and highest realistic sold prices<br>
+        4. Tap Analyze Value again
+      </div>`;
     buildLinks();
     return;
   }
 
   if (!low && high) low = Math.round(high * 0.55);
   if (!high && low) high = Math.round(low * 1.7);
-  if (!low && !high) { low = 15; high = 60; }
   if (low > high) [low, high] = [high, low];
 
   const rawAvg = (low + high) / 2;
@@ -153,7 +181,7 @@ function analyze() {
   const tips = categoryTips[category] || categoryTips.general;
   const post = listingText(item, category, fastPrice, fairPrice);
 
-  currentItem = { item: item || 'Storage unit find', category, low, high, fairPrice, fastPrice, floorPrice, holdPrice, score, photo: selectedPhotoName, created: new Date().toLocaleString() };
+  currentItem = { item, category, low, high, fairPrice, fastPrice, floorPrice, holdPrice, score, photo: selectedPhotoName, created: new Date().toLocaleString() };
 
   els('result').innerHTML = `
     <h2>2. Result</h2>
@@ -177,7 +205,6 @@ function analyze() {
       <div class="copyBox" id="postText">${post}</div>
       <button onclick="copyPost()">Copy Post</button>
     </div>`;
-
   buildLinks();
 }
 
@@ -185,15 +212,17 @@ async function copyPost() {
   const text = els('postText')?.innerText || '';
   try {
     await navigator.clipboard.writeText(text);
-    alert('Post copied. Listing goblin armed.');
+    alert('Post copied.');
   } catch {
     alert('Copy failed. Long press the text and copy manually.');
   }
 }
 
 function saveItem() {
-  if (!currentItem) analyze();
-  if (!currentItem) return;
+  if (!currentItem) {
+    analyze();
+    if (!currentItem) return;
+  }
   const inv = JSON.parse(localStorage.getItem('valueScannerInventory') || '[]');
   inv.push(currentItem);
   localStorage.setItem('valueScannerInventory', JSON.stringify(inv));
