@@ -1,0 +1,1 @@
+{"name":"storage-unit-value-scanner","version":"4.0.0","description":"Storage unit item value scanner with optional live eBay Browse API compare backend.","main":"server.js","type":"module","scripts":{"start":"node server.js","dev":"node server.js","test":"node --check server.js"},"engines":{"node":">=18"},"dependencies":{"cors":"^2.8.5","dotenv":"^16.4.7","express":"^4.21.2"}}
